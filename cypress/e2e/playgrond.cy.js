@@ -92,7 +92,7 @@ describe('template spec', () => {
 
   })
 
-  it.only('Simulating an error in the API', () => {
+  it('Simulating an error in the API', () => {
     cy.intercept(
       'GET', 
       'https://jsonplaceholder.typicode.com/todos/1', 
@@ -108,5 +108,40 @@ describe('template spec', () => {
       .and('contain.text', 'Oops, something went wrong. Refresh the page and try again.')
   })
 
+  it('simulating an erro in the network', () => {
+    cy.intercept(
+      'GET', 
+      'https://jsonplaceholder.typicode.com/todos/1', 
+      {forceNetworkError: true}
+    ).as('networkFailure')
 
-});
+    cy.contains('button', 'Get TODO').click()
+    cy.wait('@networkFailure')
+    cy.contains(
+      'spam,',
+      'Oops, something went wrong. Check your internet connection, refresh the page, and try again.'
+    ).should('be.visible')
+  })
+
+  it('creating a simple api test',() => {
+    cy.request('GET', 'https://jsonplaceholder.typicode.com/todos/1')
+      .its('status')
+      .should('be.equal', 200)
+  })
+
+  Cypress._.times(10, index => {
+   it.only(`select range inputs ${index + 1} out of 10`, () => {
+    cy.get('#level')
+      .invoke('val', index + 1)
+      .trigger('change')
+    cy.contains('#level-paragraph', `You're on level: ${index + 1}`).should('be.visible')
+
+
+  })
+  
+  })
+
+
+
+
+})
